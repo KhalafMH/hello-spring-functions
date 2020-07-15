@@ -1,0 +1,4 @@
+POST localhost:8080/uppercase
+Content-Type: text/plain
+
+Hello
