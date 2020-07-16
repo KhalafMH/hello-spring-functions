@@ -1,19 +1,16 @@
 package pro.mahdi.hellospringfunctions
 
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.onEach
-import org.junit.jupiter.api.Test
+import org.junit.Test
+import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment
+import org.springframework.cloud.function.context.test.FunctionalSpringBootTest
+import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.test.web.reactive.server.body
 import org.springframework.test.web.reactive.server.expectBody
-import pro.mahdi.hellospringfunctions.HelloSpringFunctionsApplication.Message
-import reactor.kotlin.test.test
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@RunWith(SpringRunner::class)
+@FunctionalSpringBootTest
 @AutoConfigureWebTestClient
 class HelloSpringFunctionsApplicationTests {
 
@@ -36,19 +33,11 @@ class HelloSpringFunctionsApplicationTests {
 
     @Test
     fun uppercaseFunctionReturnsUppercasedMessageStream() {
-        val inputFlow = flowOf(Message("Hello"), Message("Hi"))
-                .onEach { println("sending $it") }
         val response = client.post()
                 .uri("/uppercase")
-                .body(inputFlow)
+                .bodyValue("Hello")
                 .exchange()
-
         response.expectStatus().isOk
-        response.returnResult(Message::class.java).responseBody
-                .test()
-                .expectNext(Message("HELLO"))
-                .expectNext(Message("HI"))
-                .expectComplete()
-                .verify()
+        response.expectBody<Message>().isEqualTo(Message("HELLO"))
     }
 }
